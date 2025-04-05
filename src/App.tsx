@@ -10,6 +10,14 @@ function App() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const totalSubscriptions = subscriptions.length;
+  const totalCost = subscriptions.reduce((sum, sub) => {
+    const monthlyAmount = sub.billingCycle === 'yearly' 
+      ? sub.price / 12 
+      : sub.price;
+    return sum + monthlyAmount;
+  }, 0);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -49,18 +57,15 @@ function App() {
     }
   };
 
-  const handleAddSubscription = (
-    newSubscription: Omit<Subscription, 'id' | 'canCancelProgrammatically' | 'cancellationUrl'>
-  ) => {
-    const subscriptionToAdd = {
-      ...newSubscription,
-      id: Math.random().toString(36).substr(2, 9),
-      canCancelProgrammatically: false,
-    };
-  
-    // 👇 Make an API call here to save `subscriptionToAdd` to your backend/database
-   
-    setSubscriptions([...subscriptions, subscriptionToAdd]);
+  const handleAddSubscription = (newSubscription: Omit<Subscription, 'id' | 'canCancelProgrammatically' | 'cancellationUrl'>) => {
+    setSubscriptions([
+      ...subscriptions,
+      {
+        ...newSubscription,
+        id: Math.random().toString(36).substr(2, 9),
+        canCancelProgrammatically: false,
+      },
+    ]);
   };
 
   const handleCancelSubscription = async (subscription: Subscription) => {
@@ -125,6 +130,19 @@ function App() {
                 Your Subscriptions
               </h2>
               <p className="text-neutral-600">{email}</p>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-semibold text-neutral-800">Total Subscriptions</h3>
+                <p className="text-3xl font-bold text-primary-600 mt-2">{totalSubscriptions}</p>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-semibold text-neutral-800">Monthly Cost</h3>
+                <p className="text-3xl font-bold text-primary-600 mt-2">
+                  ${totalCost.toFixed(2)}
+                </p>
+              </div>
             </div>
             
             <div className="mt-6">
